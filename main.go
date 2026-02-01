@@ -36,29 +36,31 @@ func loadConfig() Config {
 }
 
 func main() {
-	// 1) Load config
 	cfg := loadConfig()
 	if cfg.Port == "" {
 		cfg.Port = "8080"
 	}
+	if cfg.DBConn == "" {
+		log.Fatal("DB_CONN kosong. Pastikan .env kebaca.")
+	}
 
-	// 2) Setup DB
-	db, err := database.InitDB(cfg.DBConn)
+	// Init DB pool (pgxpool)
+	dbPool, err := database.InitDBPool(cfg.DBConn)
 	if err != nil {
 		log.Fatal("Failed to initialize database:", err)
 	}
-	defer db.Close()
+	defer dbPool.Close()
 
-	// 3) Dependency Injection (wiring)
-	productRepo := repositories.NewProductRepository(db)
+	// DI
+	productRepo := repositories.NewProductRepository(dbPool)
 	productSvc := services.NewProductService(productRepo)
 	productHandler := handlers.NewProductHandler(productSvc)
 
-	categoryRepo := repositories.NewCategoryRepository(db)
+	categoryRepo := repositories.NewCategoryRepository(dbPool)
 	categorySvc := services.NewCategoryService(categoryRepo)
 	categoryHandler := handlers.NewCategoryHandler(categorySvc)
 
-	// 4) Routes
+	// Routes
 	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		_ = json.NewEncoder(w).Encode(map[string]string{
@@ -67,11 +69,9 @@ func main() {
 		})
 	})
 
-	// Products
 	http.HandleFunc("/api/produk", productHandler.HandleProducts)
 	http.HandleFunc("/api/produk/", productHandler.HandleProductByID)
 
-	// Categories
 	http.HandleFunc("/api/categories", categoryHandler.HandleCategories)
 	http.HandleFunc("/api/categories/", categoryHandler.HandleCategoryByID)
 

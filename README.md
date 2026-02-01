@@ -1,4 +1,4 @@
-# Kasir API — Session 1 (Go net/http)
+# Kasir API (Go net/http)
 
 Kasir API sederhana menggunakan **Go (net/http tanpa framework)**.  
 Project ini dibuat untuk mempelajari dasar Go dengan membangun REST API dari nol.
@@ -225,9 +225,8 @@ curl https://<URL-DEPLOY>/health
 
 ---
 
-## ℹ️ Catatan
+## Versions
+- Task 1: tag `task-1` (CRUD basic, in-memory)
+- Task 2: tag `task-2` (layered architecture, database, config)
 
-* Data disimpan **in-memory**
-* Data akan reset setiap server restart
-* Project ini fokus ke pembelajaran dasar Go & HTTP
 

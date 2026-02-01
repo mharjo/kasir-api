@@ -6,6 +6,9 @@ kasir-api.exe
 *.so
 *.dylib
 
+# Env
+.env
+
 # Build output
 *.out
 *.test

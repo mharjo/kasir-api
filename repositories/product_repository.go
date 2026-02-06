@@ -18,11 +18,21 @@ func NewProductRepository(db *pgxpool.Pool) *ProductRepository {
 	return &ProductRepository{db: db}
 }
 
-func (r *ProductRepository) GetAll() ([]models.Product, error) {
+func (r *ProductRepository) GetAll(nameFilter string) ([]models.Product, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	rows, err := r.db.Query(ctx, `SELECT id, name, price, stock, category_id FROM products ORDER BY id`)
+	query := `SELECT id, name, price, stock, category_id FROM products`
+	args := []any{}
+
+	if nameFilter != "" {
+		query += ` WHERE name ILIKE $1`
+		args = append(args, "%"+nameFilter+"%")
+	}
+
+	query += ` ORDER BY id`
+
+	rows, err := r.db.Query(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -32,7 +42,6 @@ func (r *ProductRepository) GetAll() ([]models.Product, error) {
 	for rows.Next() {
 		var p models.Product
 		var cat pgtype.Int8
-
 		if err := rows.Scan(&p.ID, &p.Name, &p.Price, &p.Stock, &cat); err != nil {
 			return nil, err
 		}

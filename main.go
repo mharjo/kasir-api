@@ -60,6 +60,16 @@ func main() {
 	categorySvc := services.NewCategoryService(categoryRepo)
 	categoryHandler := handlers.NewCategoryHandler(categorySvc)
 
+	// Transaction
+	transactionRepo := repositories.NewTransactionRepository(dbPool)
+	transactionService := services.NewTransactionService(transactionRepo)
+	transactionHandler := handlers.NewTransactionHandler(transactionService)
+
+	// Report
+	reportRepo := repositories.NewReportRepository(dbPool)
+	reportSvc := services.NewReportService(reportRepo)
+	reportHandler := handlers.NewReportHandler(reportSvc)
+
 	// Routes
 	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
@@ -74,6 +84,11 @@ func main() {
 
 	http.HandleFunc("/api/categories", categoryHandler.HandleCategories)
 	http.HandleFunc("/api/categories/", categoryHandler.HandleCategoryByID)
+
+	http.HandleFunc("/api/checkout", transactionHandler.HandleCheckout) // POST
+
+	http.HandleFunc("/api/report/hari-ini", reportHandler.HandleHariIni)
+	http.HandleFunc("/api/report", reportHandler.HandleReportRange) // optional
 
 	addr := "0.0.0.0:" + cfg.Port
 	fmt.Println("Server running di", addr)
